@@ -42,10 +42,10 @@ X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_
 model = LogisticRegression(max_iter=1000)
 model.fit(X_train, y_train)
 
-# 9. Make prediction
+# Make prediction
 predictions = model.predict(X_test)
 
-# 10. Print Confusion matrix and Classification report
+# Print Confusion matrix and Classification report
 print("--- Confusion Matrix ---")
 print(confusion_matrix(y_test, predictions))
 print("\n--- Classification Report ---")

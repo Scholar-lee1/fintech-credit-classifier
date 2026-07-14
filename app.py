@@ -46,3 +46,54 @@ else:
     dependents_mapped = int(dependents)
 
 # Predict Button
+
+
+if st.button("Evaluate Credit Application", use_container_width=True):
+# Creating a dictionary that match the original pre-encoded CSV columns
+    user_input = {
+        'Gender': gender,
+        'Married': married,
+        'Dependents': dependents,
+        'Education': education,
+        'Self_Employed': self_employed,
+        'ApplicantIncome': applicant_income,
+        'CoapplicantIncome': coapplicant_income,
+        'LoanAmount': loan_amount,
+        'Loan_Amount_Term': loan_term,
+        'Credit_History': credit_history_mapped
+    }
+    
+    
+    input_df = pd.DataFrame([user_input])
+    
+# Load data-set
+    try:
+        df_blueprint = pd.read_csv("train.csv")
+        df_blueprint = df_blueprint.drop(columns=['Loan_ID', 'Loan_Status'], errors='ignore')
+    except FileNotFoundError:
+        st.error("'train.csv' not found! Please ensure it is in your project directory.")
+        st.stop()
+        
+    # Combining, so all possible categories are known(panas get_dummies)
+    combined = pd.concat([df_blueprint, input_df], ignore_index=True)
+    combined_encoded = pd.get_dummies(combined)
+    final_features = combined_encoded.iloc[[-1]].copy()
+    
+# FORCE alignment with model features in the exact order
+    # filling thy missing value with zero
+    expected_features = model.feature_names_in_
+    final_features = final_features.reindex(columns=expected_features, fill_value=0)
+    
+# Predict
+    prediction = model.predict(final_features)
+    confidence = model.predict_proba(final_features)[0][1] * 100
+    
+# Display results
+    st.subheader("Evaluation Result")
+    if prediction[0] == 1:
+        st.success("Loan Approved!!")
+        st.write(f"The applicant is classified as Low Risk with a confidence score of {confidence:.1f}%")
+        st.balloons()
+    else:
+        st.error("Loan Denied.")
+        st.write(f"The applicant is classified as High Risk (Approval probability is only {confidence:.1f}%)")
